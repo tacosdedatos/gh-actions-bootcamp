@@ -15,3 +15,10 @@ jobs:
         run: SNOWSQL_DEST=~/bin SNOWSQL_LOGIN_SHELL=~/.profile bash snowsql-1.2.31-linux_x86_64.bash
       - name: Versión de SnowSQL
         run: ~/bin/snowsql -v
+      - name: Ejecutar SQL
+        run: ~/bin/snowsql -f ./scripts/usuarios.sql
+        env: 
+          SNOWSQL_USER: ${{ secrets.SNOWSQL_USER }}
+          SNOWSQL_ACCOUNT: ${{ secrets.SNOWSQL_ACCOUNT }}
+          SNOWSQL_PWD: ${{ secrets.SNOWSQL_PWD }}
+          
