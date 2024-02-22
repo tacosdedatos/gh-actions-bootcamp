@@ -1,0 +1,41 @@
+name: ELT con Python
+
+on:
+    workflow_dispatch:
+
+jobs:
+    extract:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+            - uses: actions/setup-python@v5
+              with:
+                python-version: '3.10' 
+                cache: 'pip' # caching pip dependencies
+            - run: pip install -r requirements.txt
+            - run: python ./scripts/extract.py
+            - name: Save data for Load Job
+              uses: actions/upload-artifact@v4
+              with:
+                name: usuarios
+                path: users_data.csv
+    load:
+        runs-on: ubuntu-latest
+        needs: extract
+        steps: 
+            - uses: actions/checkout@v4
+            - uses: actions/setup-python@v5
+              with:
+                python-version: '3.10' 
+                cache: 'pip' # caching pip dependencies
+            - run: pip install -r requirements.txt
+            - name: Download users data from Extract Job
+              uses: actions/download-artifact@v4
+              with:
+                name: usuarios
+            - name: Subir datos
+              run: python ./scripts/load.py
+              env:
+                SNOWSQL_USER: ${{ secrets.SNOWSQL_USER }}
+                SNOWSQL_PWD: ${{ secrets.SNOWSQL_PWD }}
+                SNOWSQL_ACCOUNT: ${{ secrets.SNOWSQL_ACCOUNT }}
