@@ -1,0 +1,25 @@
+name: Varios Jobs entrelazados
+
+on:
+  workflow_dispatch:
+
+jobs:
+  extraer:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Run a one-line script
+        run: ls .
+
+  transformar:
+    runs-on: ubuntu-latest
+    needs: extraer
+    steps:
+      - run: echo 'Hola mundo'
+
+  cargar:
+    runs-on: ubuntu-latest
+    needs: transformar
+    steps:
+      - run: echo 'Ya llegamos al final'
+
