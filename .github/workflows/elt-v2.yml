@@ -1,0 +1,45 @@
+name: ELT con Python
+
+on:
+    workflow_dispatch:
+
+jobs:
+    extract:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+            - uses: actions/setup-python@v5
+              with:
+                python-version: '3.10' 
+                cache: 'pip' # caching pip dependencies
+            - run: pip install -r requirements.txt
+            - run: |
+                curl "https://api.mockaroo.com/api/4cd25320?count=1000&key=03ee11f0" > "cf_resenas.csv"
+                curl "https://api.mockaroo.com/api/11a41c60?count=15&key=03ee11f0" > "cf_cursos.csv"
+                curl "https://api.mockaroo.com/api/85f24050?count=1000&key=03ee11f0" > "cf_inscripciones.csv"
+                curl "https://api.mockaroo.com/api/cb1d6a60?count=1000&key=03ee11f0" > "cf_usuarios.csv"
+            - name: Save data for Load Job
+              uses: actions/upload-artifact@v4
+              with:
+                name: datos
+                path: *.csv
+    load:
+        runs-on: ubuntu-latest
+        needs: extract
+        steps: 
+            - uses: actions/checkout@v4
+            - uses: actions/setup-python@v5
+              with:
+                python-version: '3.10' 
+                cache: 'pip' # caching pip dependencies
+            - run: pip install -r requirements.txt
+            - name: Download users data from Extract Job
+              uses: actions/download-artifact@v4
+              with:
+                name: datos
+            - name: Subir datos
+              run: python ./scripts/load.py
+              env:
+                SNOWSQL_USER: ${{ secrets.SNOWSQL_USER }}
+                SNOWSQL_PWD: ${{ secrets.SNOWSQL_PWD }}
+                SNOWSQL_ACCOUNT: ${{ secrets.SNOWSQL_ACCOUNT }}

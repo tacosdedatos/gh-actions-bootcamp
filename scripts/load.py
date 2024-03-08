@@ -13,17 +13,38 @@ conn = snowflake.connector.connect(
     schema='RAW'
 )
 
-# Asumiendo que 'users_data.json' es el archivo con los datos extraídos
-df = pd.read_csv('users_data.csv')
-df.columns = df.columns.str.upper()
+# Lista de archivos:tablas
+ARCHIVOS = [
+    {
+        "archivo": "cf_usuarios.csv",
+        "tabla": "CF_USUARIOS",
+    },
+    {
+        "archivo": "cf_resenas.csv",
+        "tabla": "CF_RESENAS",
+    },
+    {
+        "archivo": "cf_cursos.csv",
+        "tabla": "CF_CURSOS",
+    },
+    {
+        "archivo": "cf_inscripciones.csv",
+        "tabla": "CF_INSCRIPCIONES",
+    },
+    
+]
 
 # Crear cursor
 cur = conn.cursor()
 
-# Cargar el DataFrame en la tabla de Snowflake
-write_pandas(conn, df, 'CF_USUARIOS') # debe ser mayusculas aqui
+for archivo in ARCHIVOS:
+    df = pd.read_csv(archivo['archivo'])
+    df.columns = df.columns.str.upper()
 
-print("DataFrame cargado en Snowflake.")
+    # Cargar el DataFrame en la tabla de Snowflake
+    write_pandas(conn, df, archivo['tabla']) # debe ser mayusculas aqui
+
+    print("DataFrame cargado en Snowflake.")
 
 # Cerrar la conexión
 cur.close()
